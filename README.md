@@ -25,3 +25,8 @@ git pull https://github.com/csc-training/summerschool.git
 	git clone https://github.com/user/summerschool
 
 
+	merge branches:
+		git remote add NEW_NAME_OF_BRANCH ADRESS_TO_REMOTE_BRANCH
+		git pull NEW_NAME_OF_BRANCH SPECIFIED_PATH(e.g master)
+		git push	
+		

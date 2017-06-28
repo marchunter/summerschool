@@ -40,8 +40,12 @@ int main(void)
 
     // Evaluate the Laplacian
     // *INDENT-OFF*
-#error Add the missing part
- 
+        for (i=1; i<NX -1; i++) {
+        for (j=1; j<NY -1; j++) {
+        laplacian[i][j] += laplacian[i -1][j] - 2 * laplacian[i][j] + laplacian[i + 1][j] / (DX * DX) + laplacian[i][j - 1] - 2 * laplacian[i][j] + laplacian[i][j + 1] / (DY * DY);
+	//printf("laplacian updated %f \n", laplacian[i][j]);
+
+}};
     // *INDENT-ON*
 
     // Call the png writer routine
@@ -52,6 +56,7 @@ int main(void)
     } else {
         printf("Error while writing output file datastructures_functions_heat-a_b.png\n");
     }
+
 
     return 0;
 }
