@@ -1,0 +1,35 @@
+COMP=cray
+
+ifeq ($(COMP),cray)
+CC=cc
+CCFLAGS=-O3 -I/appl/opt/libpng/include
+LIBS=-L/appl/opt/libpng/lib -lpng -lz
+endif
+
+ifeq ($(COMP),gnu)
+CC=mpicc
+CCFLAGS=-O3 -Wall
+LIBS=-lpng
+endif
+
+EXE=functions
+OBJS=pngwriter.o functions.o init_field.o print_field.o laplacian.o
+
+all: $(EXE)
+
+pngwriter.o: pngwriter.c pngwriter.h
+functions.o: functions.c functions.h
+init_field.o: init_field.c init_field.h
+print_field.o: print_field.c print_field.h
+laplacian.o: laplacian.c laplacian.h
+libpng.o: libpng.c
+
+
+$(EXE): $(OBJS)
+	$(CC) $(CCFLAGS) $(OBJS) -o $@ $(LIBS)
+
+%.o: %.c
+	$(CC) $(CCFLAGS) -c $< -o $@
+
+clean:
+	-/bin/rm -f $(EXE) a.out *.o *.png
