@@ -4,10 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <mpi.h>
 
 #include "heat.h"
-
+#include <omp.h>
 
 int main(int argc, char **argv)
 {
@@ -17,36 +16,22 @@ int main(int argc, char **argv)
     double dt;                  //!< Time step
     int nsteps;                 //!< Number of time steps
 
-    int image_interval = 500;    //!< Image output interval
-
-    parallel_data parallelization; //!< Parallelization info
+    int image_interval = 10;    //!< Image output interval
 
     int iter;                   //!< Iteration counter
 
     double dx2, dy2;            //!< delta x and y squared
 
-    double start_clock;        //!< Time stamps
+    clock_t start_clock;        //!< Time stamps
 
-    /* TODO start: initialize MPI */
+#pragma omp parallel private(iter)
+{
+    initialize(argc, argv, &current, &previous, &nsteps);
 
-    int rc;
-    int size, rank;
-    MPI_Init(&argc, &argv);
-    rc = MPI_Comm_size(MPI_COMM_WORLD, &size);
-    rc = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-    /*
-    parallelization.size = size;
-    parallelization.rank = rank;
-    parallelization.nup = rank + 1;
-    parallelization.ndown = rank - 1;
-    */
-    /* TODO end */
-
-    initialize(argc, argv, &current, &previous, &nsteps, &parallelization);
-
+#pragma omp single
+{    
     /* Output the initial field */
-    write_field(&current, 0, &parallelization);
+    write_field(&current, 0);
 
     /* Largest stable time step */
     dx2 = current.dx * current.dx;
@@ -54,32 +39,26 @@ int main(int argc, char **argv)
     dt = dx2 * dy2 / (2.0 * a * (dx2 + dy2));
 
     /* Get the start time stamp */
-    start_clock = MPI_Wtime();
-
+    start_clock = clock();
+}
     /* Time evolve */
     for (iter = 1; iter < nsteps; iter++) {
-        exchange(&previous, &parallelization);
         evolve(&current, &previous, a, dt);
         if (iter % image_interval == 0) {
-          write_field(&current, iter, &parallelization);
+	#pragma omp single
+            write_field(&current, iter);
         }
         /* Swap current field so that it will be used
             as previous for next iteration step */
+#pragma omp single
         swap_fields(&current, &previous);
     }
-
+}
     /* Determine the CPU time used for the iteration */
-    if (parallelization.rank == 0) {
-      printf("Iteration took %.3f seconds.\n", (MPI_Wtime() - start_clock));
-      printf("Reference value at 5,5: %f\n", previous.data[5][5]);
-    }
+    printf("Iteration took %.3f seconds.\n", (double)(clock() - start_clock) /
+        (double)CLOCKS_PER_SEC);
+    printf("Reference value at 5,5: %f\n", previous.data[5][5]);
 
     finalize(&current, &previous);
-
-    /* TODO start: finalize MPI */
-    rc = MPI_Barrier(MPI_COMM_WORLD);
-    MPI_Finalize();
-    /* TODO end */
-
     return 0;
 }

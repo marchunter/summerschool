@@ -1,4 +1,4 @@
-COMP=cray
+COMP=gnu
 
 COMMONDIR=../../../heat/common
 
@@ -17,7 +17,7 @@ CC=gcc
 FCFLAGS=-fopenmp -O3 -Wall
 CCFLAGS=-fopenmp -O3 -Wall -I$(COMMONDIR)
 LDFLAGS=
-LIBS=-lpng
+LIBS=-lpng 
 endif
 
 EXE=mandelbrot

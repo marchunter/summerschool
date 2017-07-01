@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <omp.h>
 
 #define NX 102400
 
@@ -13,12 +14,8 @@ int main(void)
         vecA[i] = 1.0 / ((double) (NX - i));
         vecB[i] = vecA[i] * vecA[i];
     }
-
-    /* TODO:
-     *   Implement here a parallelized version of vector addition,
-     *   vecC = vecA + vecB
-     */
-
+#pragma omp parallel 
+for (i=0; i<NX; i++) {vecC[i] = vecA[i] * vecB[i];}
     sum = 0.0;
     /* Compute the check value */
     for (i = 0; i < NX; i++) {

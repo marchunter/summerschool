@@ -16,10 +16,15 @@ int main(void)
 
     sum = 0.0;
     /* TODO: Parallelize computation */
-#pragma omp for reduction(+:sum)
-{    for (i = 0; i < NX; i++) {
-        sum += vecA[i];
-    }
+long internal_sum = 0;
+#pragma omp parallel firstprivate(internal_sum) 
+{    for (i = 0; i < NX; i++) 
+	{
+        internal_sum += vecA[i];
+	
+    	}
+#pragma omp critical
+        sum += internal_sum;
 }
     printf("Sum: %ld\n",sum);
         

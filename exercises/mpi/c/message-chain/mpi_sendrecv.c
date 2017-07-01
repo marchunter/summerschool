@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[])
 {
-    int i, myid, ntasks;
+    int i, myid, ntasks, recverid, senderid;
     int size = 10000000;
     int *message;
     int *receiveBuffer;
@@ -31,19 +31,17 @@ int main(int argc, char *argv[])
     /* TODO start */
     /* Send and receive messages as defined in exercise */
     if (myid < ntasks - 1) {
-    // Sending
-	MPI_Send(message, size, MPI_INT, myid + 1, myid + 1, MPI_COMM_WORLD);
-        printf("Sender: %d. Sent elements: %d. Tag: %d. Receiver: %d\n",
-               myid, size, myid + 1, myid + 1);
+	recverid = myid +1;
     }
+    else {recverid = MPI_PROC_NULL;}
 
-    if (myid > 0) {
-    // Receiving
-	MPI_Recv(receiveBuffer, size, MPI_INT, myid - 1, myid, MPI_COMM_WORLD, &status);
-        printf("Receiver: %d. first element %d.\n",
-               myid, receiveBuffer[0]);
+    if (myid > 0) {senderid = myid -1;
     }
+    else {senderid = MPI_PROC_NULL;}
 
+	MPI_Sendrecv(message, size, MPI_INT, recverid, myid + 1, receiveBuffer, size, MPI_INT, senderid, myid, MPI_COMM_WORLD, &status);
+        printf("Sender: %d. Sent elements: %d. Tag: %d. Sender: %d. Receiver: %d\n",
+               myid, size, myid + 1, myid, myid + 1);
     /* TODO end */
 
     /* Finalize measuring the time and print it out */

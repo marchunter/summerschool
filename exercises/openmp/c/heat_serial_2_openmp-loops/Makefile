@@ -1,4 +1,4 @@
-COMP=gnu
+COMP=cray
 
 COMMONDIR=../../common
 
@@ -10,13 +10,13 @@ LIBS=-lpng -lz
 endif
 
 ifeq ($(COMP),gnu)
-CC=mpicc
+CC=gcc
 CCFLAGS=-O3 -Wall -I$(COMMONDIR)
 LDFLAGS=
-LIBS=-lpng
+LIBS=-lpng -fopenmp
 endif
 
-EXE=heat_mpi
+EXE=heat_serial
 OBJS=core.o setup.o utilities.o io.o main.o
 OBJS_PNG=$(COMMONDIR)/pngwriter.o
 

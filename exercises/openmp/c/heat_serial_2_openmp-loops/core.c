@@ -4,28 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <mpi.h>
 
 #include "heat.h"
-
-/* Exchange the boundary values */
-void exchange(field *temperature, parallel_data *parallel)
-{
-
-    /* TODO start: implement halo exchange */
-    // Send to the up, receive from down
-
-    MPI_Sendrecv(temperature->data[1], temperature->ny, MPI_DOUBLE_PRECISION, parallel->nup, parallel->rank, 
-	temperature->data[temperature->nx + 1], temperature->ny, MPI_DOUBLE_PRECISION, parallel->ndown, parallel->ndown, MPI_COMM_WORLD, MPI_STATUS_IGNORE);        
-
-    // Send to the down, receive from up
-
-    MPI_Sendrecv(temperature->data[temperature->nx], temperature->ny, MPI_DOUBLE_PRECISION, parallel->ndown, parallel->rank, 
-	temperature->data[0], temperature->ny, MPI_DOUBLE_PRECISION, parallel->nup, parallel->nup, MPI_COMM_WORLD, MPI_STATUS_IGNORE);        
-
-    /* TODO end */
-}
-
 
 /* Update the temperature values using five-point stencil */
 void evolve(field *curr, field *prev, double a, double dt)
@@ -38,6 +18,7 @@ void evolve(field *curr, field *prev, double a, double dt)
      * are not updated. */
     dx2 = prev->dx * prev->dx;
     dy2 = prev->dy * prev->dy;
+#pragma omp parallel for private(i,j)
     for (i = 1; i < curr->nx + 1; i++) {
         for (j = 1; j < curr->ny + 1; j++) {
             curr->data[i][j] = prev->data[i][j] + a * dt *
