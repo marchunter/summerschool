@@ -7,12 +7,14 @@
 #define DATASIZE   64
 #define WRITER_ID   0
 
+int ntasks;
+
 void single_writer(int, int *, int);
 
 
 int main(int argc, char *argv[])
 {
-    int my_id, ntasks, i, localsize;
+    int my_id, i, localsize;
     int *localvector;
 
     MPI_Init(&argc, &argv);
@@ -53,7 +55,44 @@ void single_writer(int my_id, int *localvector, int localsize)
 
     /* TODO: Implement a function that will write the data to file so that
        a single process does the file io. Use rank WRITER_ID as the io rank */
+    
+    fullvector = (int *) malloc(DATASIZE * sizeof(int));
 
+    MPI_Gather(localvector, localsize, MPI_INT, 
+        fullvector, localsize, MPI_INT, 
+        WRITER_ID, MPI_COMM_WORLD);
+
+    if (my_id == WRITER_ID) {
+        printf("Writing to singlewriter.dat\n");
+        for (int i = 0; i < DATASIZE; i++) {
+            printf("First entry looks like %d\n", fullvector[i]);
+        }
+        /*
+        fp=fopen("singlewriter.dat", "wb");
+        //fprintf(fp, "Don't forget to write stuff\n");
+        for (int i = 0; i < DATASIZE; i++) {
+            fprintf(fp, "%d ", fullvector[i]);
+        }
+        fclose(fp);
+        */
+
+        //fprintf(fp, fullvector);
+        fp=fopen("singlewriter.dat", "wb");
+        fwrite(fullvector, sizeof(int), DATASIZE, fp);
+        fclose(fp);
+        }
+
+    printf("Writing to single files\n");
+    for (int i = 0; i < ntasks; i++) {
+        printf("Task %d is writing.\n", i);
+        if (my_id == i) {
+            char string[1024];
+            sprintf(string, "task%d.dat", my_id);
+            fp=fopen(string, "wb");
+            fwrite(localvector, sizeof(int), localsize, fp);
+            fclose(fp);
+        }
+    }
     free(fullvector);
 }
 
