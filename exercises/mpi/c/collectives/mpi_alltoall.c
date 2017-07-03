@@ -36,11 +36,16 @@ int main(int argc, char *argv[])
     /* TODO: use a single collective communication call (and maybe prepare
      *       some parameters for the call) */
 
-    MPI_Bcast(sendbuf, 2 * NTASKS, MPI_INT, 0, MPI_COMM_WORLD);
+    int arr_size = 2 * NTASKS;
+    int n_el_per_send = arr_size / NTASKS;
+    //int arr_recvcounts[NTASKS] = {1,1,2,4};
+    //int arr_displs[NTASKS] = {0,1,2,4};
+    
+    MPI_Alltoall(sendbuf, n_el_per_send, MPI_INT, recvbuf, n_el_per_send, MPI_INT, MPI_COMM_WORLD);
 
     /* Print data that was received */
     /* TODO: add correct buffer */
-    print_buffers(printbuf, sendbuf, 2 * NTASKS);
+    print_buffers(printbuf, recvbuf, 2 * NTASKS);
 
     MPI_Finalize();
     return 0;

@@ -36,11 +36,31 @@ int main(int argc, char *argv[])
     /* TODO: use a single collective communication call (and maybe prepare
      *       some parameters for the call) */
 
-    MPI_Bcast(sendbuf, 2 * NTASKS, MPI_INT, 0, MPI_COMM_WORLD);
-
+    int arr_size = 2 * NTASKS;
+    int n_el_per_send = arr_size / NTASKS;
+    //int arr_recvcounts[NTASKS] = {1,1,2,4};
+    //int arr_displs[NTASKS] = {0,1,2,4};
+    if (rank <= 1) {color = 1;}
+    else               {color = 2;}
+    
+    
+    int subcomm;    
+    MPI_Comm_split(MPI_COMM_WORLD, color, rank, &subcomm);
+    // rank in subcommunicator
+    int mysubid;
+    MPI_Comm_rank(subcomm, &mysubid);
+    
+    // assignment of new ranks in order due to key in MPI_Comm_split
+    int subcomm_root;
+    subcomm_root = 0;
+    // reduction to process with subrank 0
+    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Reduce(sendbuf, recvbuf, arr_size, MPI_INT, MPI_SUM, subcomm_root, subcomm);
+    
+    printf("I am rank %d in MPI_COMM_WORLD, but %d in Comm %d.\n", rank, mysubid, color);
     /* Print data that was received */
     /* TODO: add correct buffer */
-    print_buffers(printbuf, sendbuf, 2 * NTASKS);
+    print_buffers(printbuf, recvbuf, 2 * NTASKS);
 
     MPI_Finalize();
     return 0;

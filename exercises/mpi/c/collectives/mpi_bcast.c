@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
+#include <string.h>
 
 #define NTASKS 4
 
@@ -35,12 +36,12 @@ int main(int argc, char *argv[])
 
     /* TODO: use a single collective communication call (and maybe prepare
      *       some parameters for the call) */
-
-    MPI_Bcast(sendbuf, 2 * NTASKS, MPI_INT, 0, MPI_COMM_WORLD);
+    memcpy(&recvbuf, &sendbuf, sizeof(int) * 2 * NTASKS); 
+    MPI_Bcast(recvbuf, 2 * NTASKS, MPI_INT, 0, MPI_COMM_WORLD);
 
     /* Print data that was received */
     /* TODO: add correct buffer */
-    print_buffers(printbuf, sendbuf, 2 * NTASKS);
+    print_buffers(printbuf, recvbuf, 2 * NTASKS);
 
     MPI_Finalize();
     return 0;

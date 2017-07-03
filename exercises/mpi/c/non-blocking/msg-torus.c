@@ -33,13 +33,13 @@ int main(int argc, char *argv[])
     if (myid < ntasks - 1) {
         destination = myid + 1;
     } else {
-        destination = MPI_PROC_NULL;
+        destination = 0;
     }
 
     if (myid > 0) {
         source = myid - 1;
     } else {
-        source = MPI_PROC_NULL;
+        source = ntasks -1;
     }
 
     /* Start measuring the time spend in communication */
